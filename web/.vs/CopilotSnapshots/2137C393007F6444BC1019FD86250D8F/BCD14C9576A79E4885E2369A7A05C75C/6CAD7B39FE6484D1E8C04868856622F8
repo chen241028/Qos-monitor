@@ -1,0 +1,147 @@
+﻿import { useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { useGameStore } from '../store/gameStore';
+import { Card } from '../types/game';
+import { Sparkles } from 'lucide-react';
+
+const RARITY_COLORS: Record<string, string> = {
+  SSR: 'from-yellow-500 via-orange-500 to-red-500',
+  SR: 'from-purple-500 via-pink-500 to-purple-600',
+  R: 'from-blue-500 via-cyan-500 to-blue-600',
+};
+
+export function CardDrawPhase() {
+  const userCards = useGameStore((state) => state.userCards);
+  const startRace = useGameStore((state) => state.startRace);
+  const drawUserCards = useGameStore((state) => state.drawUserCards);
+
+  // 如果没有卡片，自动抽取（只在组件首次挂载时）
+  useEffect(() => {
+    if (userCards.length === 0) {
+      drawUserCards();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // 只在挂载时运行一次，作为备用
+
+  const handleDraw = () => {
+    drawUserCards();
+  };
+
+  const handleStartRace = () => {
+    if (userCards.length === 3) {
+      startRace();
+    }
+  };
+
+  console.log('CardDrawPhase rendered, userCards:', userCards.length);
+
+  return (
+    <div className="min-h-screen p-8" style={{ backgroundColor: '#0A0A0F', color: '#EEF2FF', minHeight: '100vh' }}>
+      <div className="max-w-6xl mx-auto">
+        <h2 className="text-4xl font-bold mb-2 text-center" style={{ color: '#EEF2FF', textShadow: '0 0 10px rgba(79, 70, 229, 0.6)' }}>
+          抽取你的网络卡片
+        </h2>
+        
+        <p className="text-center mb-8" style={{ color: '#9CA3AF' }}>
+          卡片将决定你的网络在比赛中的表现
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {[0, 1, 2].map((index) => {
+            const card = userCards[index];
+            return (
+              <div key={index} className="relative">
+                {card ? (
+                  <CardDisplay card={card} />
+                ) : (
+                  <EmptyCardSlot onDraw={handleDraw} />
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {userCards.length < 3 && (
+          <div className="text-center">
+            <button
+              onClick={handleDraw}
+              style={{ 
+                backgroundColor: '#4F46E5', 
+                color: 'white', 
+                padding: '12px 24px', 
+                borderRadius: '8px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                border: 'none'
+              }}
+            >
+              抽取卡片
+            </button>
+          </div>
+        )}
+
+        {userCards.length === 3 && (
+          <div className="text-center">
+            <button
+              onClick={handleStartRace}
+              style={{ 
+                backgroundColor: '#F97316', 
+                color: 'white', 
+                padding: '16px 32px', 
+                borderRadius: '8px',
+                fontSize: '18px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                border: 'none',
+                boxShadow: '0 4px 14px 0 rgba(249, 115, 22, 0.3)'
+              }}
+            >
+              开始比赛
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CardDisplay({ card }: { card: Card }) {
+  const rarityColor = RARITY_COLORS[card.rarity] || RARITY_COLORS.R;
+
+  return (
+    <motion.div
+      whileHover={{ scale: 1.05, y: -5 }}
+      className="relative bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-6 border-2 border-gray-700 cursor-pointer transition-all duration-300 card-glow"
+    >
+      <div className={`absolute inset-0 bg-gradient-to-br ${rarityColor} opacity-20 rounded-xl`} />
+      
+      <div className="relative z-10">
+        <div className="flex justify-between items-start mb-4">
+          <span className={`px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r ${rarityColor} text-white`}>
+            {card.rarity}
+          </span>
+          <span className="text-xs text-gray-400 capitalize">{card.category}</span>
+        </div>
+        
+        <h3 className="text-xl font-bold mb-2 text-white">{card.name}</h3>
+        <p className="text-sm text-gray-300 mb-4">{card.description}</p>
+        <p className="text-xs text-gray-400 italic">{card.flavorText}</p>
+      </div>
+    </motion.div>
+  );
+}
+
+function EmptyCardSlot({ onDraw }: { onDraw: () => void }) {
+  return (
+    <motion.div
+      whileHover={{ scale: 1.05 }}
+      onClick={onDraw}
+      className="relative bg-gray-900/50 border-2 border-dashed border-gray-700 rounded-xl p-6 h-full min-h-[300px] flex items-center justify-center cursor-pointer transition-all duration-300"
+    >
+      <div className="text-center">
+        <Sparkles className="w-12 h-12 mx-auto mb-4 text-gray-600" />
+        <p className="text-gray-500">点击抽取卡片</p>
+      </div>
+    </motion.div>
+  );
+}

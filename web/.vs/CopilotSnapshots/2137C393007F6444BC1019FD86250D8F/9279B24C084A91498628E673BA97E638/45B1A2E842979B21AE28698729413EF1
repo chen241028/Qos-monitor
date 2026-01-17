@@ -1,0 +1,18 @@
+﻿import { useGameStore } from "./store/gameStore";
+import { StartScreen } from "./components/StartScreen";
+import { CardDrawPhase } from "./components/CardDrawPhase";
+import { RacePhase } from "./components/RacePhase";
+import { ResultPhase } from "./components/ResultPhase";
+import { GrafanaPanel } from "./components/GrafanaPanel";
+
+export default function App() {
+  const phase = useGameStore(s => s.phase);
+  const show = phase !== "start";
+  
+  let content = null;
+  
+  if (phase === "start") content = <StartScreen />;
+  else if (phase === "card-draw") content = <CardDrawPhase />;
+  else if
+
+

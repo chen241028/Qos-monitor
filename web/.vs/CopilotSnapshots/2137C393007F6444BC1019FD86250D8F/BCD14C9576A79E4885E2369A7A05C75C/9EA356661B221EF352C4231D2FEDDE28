@@ -1,0 +1,136 @@
+﻿import { useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
+import { useGameStore } from '../store/gameStore';
+import { simulateRaceStep } from '../utils/raceSimulator';
+import { generateAnalysis } from '../utils/analysis';
+
+export function RacePhase() {
+  const raceState = useGameStore((state) => state.raceState);
+  const userCards = useGameStore((state) => state.userCards);
+  const updateRace = useGameStore((state) => state.updateRace);
+  const endRace = useGameStore((state) => state.endRace);
+  const animationFrameRef = useRef<number>();
+  const startTimeRef = useRef<number>();
+
+  useEffect(() => {
+    if (!raceState) return;
+
+    const animate = (timestamp: number) => {
+      if (!startTimeRef.current) {
+        startTimeRef.current = timestamp;
+      }
+
+      const elapsed = timestamp - startTimeRef.current;
+      const deltaTime = 16; // ~60fps
+
+      const newState = simulateRaceStep(raceState, deltaTime);
+      updateRace(newState);
+
+      if (newState.elapsedTime >= newState.duration) {
+        // Race finished
+        const user = newState.participants.find((p) => p.id === 'user')!;
+        const opponent = newState.participants.find((p) => p.id === 'opponent')!;
+        const winner = user.position > opponent.position ? 'user' : 'opponent';
+        const difference = Math.abs(user.position - opponent.position);
+
+        endRace({
+          winner,
+          userPosition: user.position,
+          difference,
+          analysis: generateAnalysis(userCards, user.position, opponent.position),
+        });
+        
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current);
+        }
+      } else {
+        animationFrameRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    animationFrameRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [raceState, updateRace, endRace]);
+
+  if (!raceState) return null;
+
+  const user = raceState.participants.find((p) => p.id === 'user')!;
+  const opponent = raceState.participants.find((p) => p.id === 'opponent')!;
+  const progress = (raceState.elapsedTime / raceState.duration) * 100;
+
+  return (
+    <div className="min-h-screen p-8" style={{ backgroundColor: '#0A0A0F' }}>
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-6">
+          <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+            <motion.div
+              className="h-full bg-gradient-to-r from-primary to-cta"
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.1, ease: 'linear' }}
+            />
+          </div>
+          <p className="text-sm text-gray-400 mt-2 text-center">
+            {Math.round(raceState.elapsedTime / 1000)}s / {Math.round(raceState.duration / 1000)}s
+          </p>
+        </div>
+
+        <div className="space-y-8 mb-8">
+          <RaceTrack participant={user} isUser />
+          <RaceTrack participant={opponent} isUser={false} />
+        </div>
+
+        {raceState.commentary.length > 0 && (
+          <motion.div
+            key={raceState.commentary.length}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-gray-900/50 border border-gray-700 rounded-lg p-4"
+          >
+            <p className="text-gray-300 text-center">
+              {raceState.commentary[raceState.commentary.length - 1]}
+            </p>
+          </motion.div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function RaceTrack({
+  participant,
+  isUser,
+}: {
+  participant: { id: string; name: string; position: number; speed: number };
+  isUser: boolean;
+}) {
+  return (
+    <div className="relative">
+      <div className="h-16 bg-gray-900 rounded-lg border border-gray-700 overflow-hidden relative">
+        <motion.div
+          className={`absolute top-0 left-0 h-full w-16 rounded-lg flex items-center justify-center font-bold ${
+            isUser
+              ? 'bg-gradient-to-r from-primary to-secondary'
+              : 'bg-gradient-to-r from-gray-700 to-gray-600'
+          }`}
+          initial={{ left: 0 }}
+          animate={{ left: `${participant.position}%` }}
+          transition={{ duration: 0.1, ease: 'linear' }}
+        >
+          <span className="text-white text-xs">{participant.name}</span>
+        </motion.div>
+      </div>
+      <div className="mt-2 flex justify-between text-xs text-gray-400">
+        <span>起点</span>
+        <span>进度: {Math.round(participant.position)}%</span>
+        <span>速度: {Math.round(participant.speed * 100)}%</span>
+        <span>终点</span>
+      </div>
+    </div>
+  );
+}

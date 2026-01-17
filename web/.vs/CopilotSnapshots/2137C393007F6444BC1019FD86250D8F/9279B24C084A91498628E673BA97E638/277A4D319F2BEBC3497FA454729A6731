@@ -1,0 +1,16 @@
+﻿import { useGameStore as g } from "./store/gameStore";
+import { StartScreen as S } from "./components/StartScreen";
+import { CardDrawPhase as C } from "./components/CardDrawPhase";
+import { RacePhase as R } from "./components/RacePhase";
+import { ResultPhase as L } from "./components/ResultPhase";
+import { GrafanaPanel as P } from "./components/GrafanaPanel";
+
+export default function App() {
+  const p = g(s => s.phase), x = p !== "start";
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-50">
+      <div className="mx-auto flex min-h-screen max-w-[1400px]">
+        <main className="flex-1 overflow-hidden">
+          {p === "start" ? <S /> : p === "card-draw
+
+

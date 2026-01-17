@@ -1,0 +1,17 @@
+﻿import { useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
+import { useGameStore } from '../store/gameStore';
+import { simulateRaceStep } from '../utils/raceSimulator';
+import { generateAnalysis } from '../utils/analysis';
+
+export function RacePhase() {
+  const raceState = useGameStore((state) => state.raceState);
+  const userCards = useGameStore((state) => state.userCards);
+  const updateRace = useGameStore((state) => state.updateRace);
+  const endRace = useGameStore((state) => state.endRace);
+  const animationFrameRef = useRef<number>();
+  const startTimeRef = useRef<number>();
+
+  useEffect(() => {
+    if (!raceState) {
+     

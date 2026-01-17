@@ -1,0 +1,21 @@
+﻿import { useGameStore } from './store/gameStore';
+import { StartScreen } from './components/StartScreen';
+import { CardDrawPhase } from './components/CardDrawPhase';
+import { RacePhase } from './components/RacePhase';
+import { ResultPhase } from './components/ResultPhase';
+import { GrafanaPanel } from './components/GrafanaPanel';
+
+function App() {
+  const phase = useGameStore((state) => state.phase);
+
+  // Show Grafana panel on right side for all phases except start
+  const showGrafana = phase !== 'start';
+
+  console.log('App rendered, phase:', phase);
+
+  const renderPhaseContent = () => {
+    switch (phase) {
+      case 'start':
+        return <StartScreen />;
+      case 'card-draw':
+        return <CardDrawPhase />;

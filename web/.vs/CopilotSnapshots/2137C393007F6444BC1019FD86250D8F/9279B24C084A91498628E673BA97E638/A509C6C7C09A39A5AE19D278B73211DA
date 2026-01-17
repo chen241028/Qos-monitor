@@ -1,0 +1,33 @@
+﻿import { useGameStore } from "./store/gameStore";
+import { StartScreen } from "./components/StartScreen";
+import { CardDrawPhase } from "./components/CardDrawPhase";
+import { RacePhase } from "./components/RacePhase";
+import { ResultPhase } from "./components/ResultPhase";
+import { GrafanaPanel } from "./components/GrafanaPanel";
+
+export default function App() {
+    const phase = useGameStore((state) => state.phase);
+
+    const showGrafana = phase !== "start";
+
+    const Placeholder = ({ title }: { title: string }) => (
+        <div className="p-6">
+            <div className="text-2xl font-semibold">{title}</div>
+            <div className="mt-2 text-sm text-slate-400">
+                当前阶段：<span className="font-mono">{String(phase)}</span>
+            </div>
+            <div className="mt-6 rounded-xl border border-slate-800 bg-slate-900/40 p-4 text-sm text-slate-300">
+                这个阶段组件正在加载或出现了问题。
+            </div>
+        </div>
+    );
+
+    const renderPhaseContent = () => {
+        switch (phase) {
+            case "start":
+                return <StartScreen />;
+            case "card-draw":
+                return <CardDrawPhase />;
+            case
+
+
