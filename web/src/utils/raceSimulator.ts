@@ -321,7 +321,7 @@ export function simulateRaceStep(raceState: RaceState, deltaTime: number): RaceS
     const avgBurst = averageStat(cards, "burst");
     const avgDelay = averageStat(cards, "delay");
     const avgPredictability = averageStat(cards, "predictability");
-    const avgStability = averageStat(cards, "stability");
+    //const avgStability = averageStat(cards, "stability");
 
     const bandwidthCount = countCategory(cards, "bandwidth");
 

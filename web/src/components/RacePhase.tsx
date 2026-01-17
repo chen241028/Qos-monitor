@@ -76,7 +76,10 @@ export function RacePhase() {
                         const userPos = user?.position ?? 0;
                         const opponentPos = opponent?.position ?? 0;
                         const analysisCards =
-                            (user?.cards?.length ?? 0) > 0 ? user.cards : userCards;
+                            user?.cards && user.cards.length > 0
+                                ? user.cards
+                                : userCards;
+
 
                         analysis = generateAnalysis(analysisCards, userPos, opponentPos);
                     } catch {
